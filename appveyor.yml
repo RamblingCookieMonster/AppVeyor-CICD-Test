@@ -1,0 +1,40 @@
+# See http://www.appveyor.com/docs/appveyor-yml for many more options
+
+#Beware the infinite rebuild bug. Woke up to 84 new releases!
+skip_tags: true
+
+# Skip on updates to the readme.
+# We can force this by adding [skip ci] or [ci skip] anywhere in commit message 
+skip_commits:
+  message: /updated readme.*/
+
+install:
+  - cinst pester -y
+
+build_script:
+#Package things up. generalize this?
+  - 7z a PSSQLite.zip PSSQLite\
+
+test_script:
+# Test with native PS version
+  - ps: . .\Tests\appveyor.pester.ps1 -Test
+# Test with PS version 2
+  - ps: powershell.exe -version 2.0 -executionpolicy bypass -noprofile -file .\Tests\appveyor.pester.ps1 -Test
+# Finalize pass - collect and upload results
+  - ps: . .\Tests\appveyor.pester.ps1 -Finalize
+
+artifacts:
+#zipped package for delivery
+  - path: PSSQLite.zip
+
+deploy:
+  release: $(APPVEYOR_PROJECT_NAME)-v$(appveyor_build_version)
+  provider: GitHub
+  auth_token:
+    secure: 6EkEfpbXPUtcNsC2dJTzbMVurklB5mY/N4ZDUfXcT1YimCbQ2O+QIYY846+ovgI4 # my encrypted token from GitHub
+  artifact: PSSQLite.zip
+  draft: false
+  prerelease: false
+  on:
+    branch: master                 # release from master branch only
+    appveyor_repo_tag: true        # deploy on tag push only
