@@ -1,4 +1,4 @@
-# This script will invoke pester tests
+# This script will invoke pester tests and deploy (I know, I know... do one thing...)
 # It should invoke on PowerShell v2 and later
 # We serialize XML results and pull them in appveyor.yml
 
@@ -6,6 +6,7 @@
 param(
     [switch]$Finalize,
     [switch]$Test,
+    [switch]$Deploy,
     [string]$ProjectRoot = $ENV:APPVEYOR_BUILD_FOLDER
 )
 
@@ -28,6 +29,20 @@ param(
     {
         "`n`tSTATUS: Testing with PowerShell $PSVersion`n"
     
+        Get-Module -ListAvailable | select Name, Path, PowerShellVersion | Format-Table -AutoSize | Out-String
+
+        if($PSVersionTable.PSVersion.Major -gt 4)
+        {
+            Install-Module Pester -confirm:$false -force
+            Get-Module Pester | Select Name, Path, PowerShellVersion | Format-Table -AutoSize | Out-String
+        }
+    <#    
+        # cinst didn't seem
+        if(-not (Get-Module Pester -ListAvailable))
+        {
+            $null = Install-Module Pester -Force -Confirm:$False
+        }
+
         Import-Module Pester -force
 
         Invoke-Pester @Verbose -Path "$ProjectRoot\Tests" -OutputFormat NUnitXml -OutputFile "$ProjectRoot\$TestFile" -PassThru |
@@ -37,6 +52,7 @@ param(
         {
             (New-Object 'System.Net.WebClient').UploadFile( $Address, "$ProjectRoot\$TestFile" )
         }
+    #>
     }
 
 #If finalize is specified, display errors and fail build if we ran into any
@@ -76,4 +92,36 @@ param(
 
                 throw "$FailedCount tests failed."
             }
+    }
+
+# Deploy!
+    if($Deploy)
+    {
+        if($ENV:APPVEYOR_REPO_COMMIT_MESSAGE -notmatch '\[ReleaseMe\]')
+        {
+            Write-Verbose 'Skipping deployment, include [ReleaseMe] in your commit message to deploy.'
+        }
+        elseif($env:APPVEYOR_REPO_BRANCH -notlike 'master')
+        {
+            Write-Verbose 'Skipping deployment, not master!'
+        }
+        else
+        {
+
+            $PublishParams = @{
+                Path = Join-Path $ENV:APPVEYOR_BUILD_FOLDER $ENV:ModuleName
+                NuGetApiKey = $ENV:NugetApiKey
+            }
+            if($ENV:ReleaseNotes) { $PublishParams.ReleaseNotes = $ENV:ReleaseNotes }
+            if($ENV:LicenseUri) { $PublishParams.LicenseUri = $ENV:LicenseUri }
+            if($ENV:ProjectUri) { $PublishParams.ProjectUri = $ENV:ProjectUri }
+            if($ENV:Tags)
+            {
+                # split it up, remove whitespace
+                $PublishParams.Tags = $ENV:Tags -split ',' | where { $_ } | foreach {$_.trim()}
+            }
+        
+            #Publish!
+            Publish-Module @PublishParams
+        }
     }
