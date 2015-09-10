@@ -7,8 +7,17 @@ param(
     [switch]$Finalize,
     [switch]$Test,
     [switch]$Deploy,
+    [switch]$ConfigurePester,
     [string]$ProjectRoot = $ENV:APPVEYOR_BUILD_FOLDER
 )
+
+    if($ConfigurePester)
+    {
+        Install-Module Pester -Force -Confirm:$False
+        $PesterPath = Get-Module Pester | Select -ExpandProperty Path
+        [Environment]::SetEnvironmentVariable("PesterPath", $PesterPath, "Machine")
+        return
+    }
 
 #Initialize some variables, move to the project root
     $Timestamp = Get-date -uformat "%Y%m%d-%H%M%S"
@@ -31,10 +40,9 @@ param(
     
         Get-Module -ListAvailable | select Name, Path, PowerShellVersion | Format-Table -AutoSize | Out-String
 
-        if($PSVersionTable.PSVersion.Major -gt 4)
+        if($PSVersionTable.PSVersion.Major -le 4)
         {
-            Install-Module Pester -confirm:$false -force
-            Get-Module Pester | Select Name, Path, PowerShellVersion | Format-Table -AutoSize | Out-String
+            Import-Module -Path $([Environment]::GetEnvironmentVariable("PesterPath","Machine"))
         }
     <#    
         # cinst didn't seem
