@@ -25,8 +25,8 @@ install:
   - cinst pester -y
 
 # Package things up.
-build_script:
-  - 7z a %ModuleName%.zip %ModuleName%\
+#build_script:
+#  - 7z a %ModuleName%.zip %ModuleName%\
 
 # Test with native PS and PS version 2. Upload test results
 test_script:
@@ -35,8 +35,8 @@ test_script:
   - ps: . .\Tests\appveyor.pester.ps1 -Test -Finalize
 
 # zipped package for delivery
-artifacts:
-  - path: $(ModuleName).zip
+#artifacts:
+#  - path: $(ModuleName).zip
 
 # Duct tape, until this is implemented:
 #    https://github.com/appveyor/ci/issues/128
