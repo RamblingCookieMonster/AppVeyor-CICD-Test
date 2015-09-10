@@ -12,8 +12,10 @@ environment:
   NugetApiKey: # Add your API key to AppVeyor, paste the encrypted bit here
     secure: oqMFzG8F65K5l572V7VzlZIWU7xnSYDLtSXECJAAURrXe8M2+BAp9vHLT+1h1lR0
 
+build: false
+
 #Beware the infinite rebuild bug. Woke up to 84 new releases!
-skip_tags: true
+#skip_tags: true
 
 # Skip on updates to the readme.
 # We can force this by adding [skip ci] or [ci skip] anywhere in commit message 
