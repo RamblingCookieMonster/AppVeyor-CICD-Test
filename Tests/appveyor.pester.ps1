@@ -13,9 +13,7 @@ param(
 
     if($ConfigurePester)
     {
-        Install-Module Pester -Force -Confirm:$False
-        $PesterPath = Get-Module Pester | Select -ExpandProperty Path
-        [Environment]::SetEnvironmentVariable("PesterPath", $PesterPath, "Machine")
+        [Environment]::SetEnvironmentVariable("PesterPath", (Get-Module Pester).Path, "Machine")
         return
     }
 
@@ -32,22 +30,22 @@ param(
     {
         $Verbose.add("Verbose",$True)
     }
-   
+
 #Run a test with the current version of PowerShell, upload results
     if($Test)
     {
         "`n`tSTATUS: Testing with PowerShell $PSVersion`n"
-    
-        Get-Module -ListAvailable | select Name, Path, PowerShellVersion | Format-Table -AutoSize | Out-String
+
 
         if($PSVersionTable.PSVersion.Major -le 4)
         {
-            Import-Module -Path $([Environment]::GetEnvironmentVariable("PesterPath","Machine"))
+            Import-Module $([Environment]::GetEnvironmentVariable("PesterPath","Machine"))
         }
-    <#    
+
         # cinst didn't seem
         if(-not (Get-Module Pester -ListAvailable))
         {
+            "WTF Installing Pester"
             $null = Install-Module Pester -Force -Confirm:$False
         }
 
@@ -55,12 +53,12 @@ param(
 
         Invoke-Pester @Verbose -Path "$ProjectRoot\Tests" -OutputFormat NUnitXml -OutputFile "$ProjectRoot\$TestFile" -PassThru |
             Export-Clixml -Path "$ProjectRoot\PesterResults_PS$PSVersion`_$Timestamp.xml"
-        
+
         If($env:APPVEYOR_JOB_ID)
         {
             (New-Object 'System.Net.WebClient').UploadFile( $Address, "$ProjectRoot\$TestFile" )
         }
-    #>
+
     }
 
 #If finalize is specified, display errors and fail build if we ran into any
