@@ -13,7 +13,8 @@ param(
 
     if($ConfigurePester)
     {
-        [Environment]::SetEnvironmentVariable("PesterPath", (Get-Module Pester).Path, "Machine")
+        $PesterPath = @( (Get-Module Pester -ListAvailable).Path )[0]
+        [Environment]::SetEnvironmentVariable("PesterPath", $PesterPath, "Machine")
         return
     }
 
