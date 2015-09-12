@@ -37,20 +37,22 @@ param(
     {
         "`n`tSTATUS: Testing with PowerShell $PSVersion`n"
 
-
+        #Load from path in env
         if($PSVersionTable.PSVersion.Major -le 4)
         {
             Import-Module $([Environment]::GetEnvironmentVariable("PesterPath","Machine"))
         }
-
-        # cinst didn't seem
-        if(-not (Get-Module Pester -ListAvailable))
+        # cinst didn't seem to work??
+        elseif(-not (Get-Module Pester -ListAvailable))
         {
-            "WTF Installing Pester"
             $null = Install-Module Pester -Force -Confirm:$False
+            Import-Module Pester -force
         }
-
-        Import-Module Pester -force
+        #Module is there
+        else
+        {
+            Import-Module Pester -force
+        }
 
         Invoke-Pester @Verbose -Path "$ProjectRoot\Tests" -OutputFormat NUnitXml -OutputFile "$ProjectRoot\$TestFile" -PassThru |
             Export-Clixml -Path "$ProjectRoot\PesterResults_PS$PSVersion`_$Timestamp.xml"
