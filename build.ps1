@@ -2,7 +2,7 @@
 Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null
 
 Install-Module PSDepend -Force
-Invoke-PSDepend -Force
+Invoke-PSDepend -Force -verbose
 #Set-BuildEnvironment
 
 Invoke-psake .\psake.ps1
