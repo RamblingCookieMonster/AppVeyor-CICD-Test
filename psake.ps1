@@ -23,9 +23,7 @@ Properties {
 Task Default -Depends Init
 
 Task Init {
-    $Script = Get-Content -Raw -Path .\Test.ps1
-
-    Invoke-Expression $Script
+    . .\test.ps1
     Start-Process powershell.exe -ArgumentList "-version", '2.0',
                                                '-executionpolicy', 'bypass',
                                                '-noprofile',

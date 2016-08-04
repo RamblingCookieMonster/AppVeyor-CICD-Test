@@ -3,7 +3,7 @@
         Out-Host
 
     Write-Host '`n`nMODULES`n`n'
-    Get-Module -ListAvailable |
+    Get-Module -ListAvailable -Verbose |
         Select Name,
                Version,
                Path |
