@@ -1,26 +1,9 @@
-﻿Write-Host '`n`nPSVersion`n`n'
-$PSVersionTable |
-    Out-Host
+﻿# Grab nuget bits, install modules, set build variables, start build.
+Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null
 
-Write-Host '`n`nMODULES`n`n'
-Get-Module -ListAvailable |
-    Select Name,
-           Version,
-           Path |
-    Sort Name |
-    Out-Host
+Install-Module PSDepend -Force
+Invoke-PSDepend -Force
+#Set-BuildEnvironment
 
-Write-Host '`n`nENV`n`n'
-Get-ChildItem ENV: |
-    Out-Host
-
-Write-Host '`n`nVARIABLES`n`n'
-
-Get-Variable |
-    Out-Host
-
-Write-Host '`n`nPowerShellGet`n`n'
-Get-Command -Module PowerShellGet |
-    Select -ExpandProperty Name |
-    Sort |
-    Out-Host
+Invoke-psake .\psake.ps1
+exit ( [int]( -not $psake.build_success ) )
