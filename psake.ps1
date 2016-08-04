@@ -28,7 +28,7 @@ Task Init {
                                                '-executionpolicy', 'bypass',
                                                '-noprofile',
                                                '-file',
-                                               '.\test.ps1'
+                                               "$PWD\test.ps1"
 }
 <#
 Task Test -Depends Init  {
