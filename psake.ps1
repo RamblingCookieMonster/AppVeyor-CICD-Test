@@ -24,15 +24,7 @@ Task Default -Depends Init
 
 Task Init {
     . .\test.ps1
-
-    $ArgumentList = "-version", '2.0',
-                    '-executionpolicy', 'bypass',
-                    '-noprofile',
-                    '-file',
-                    "$PWD\test.ps1"
-
-    write-host "Running with $($ArgumentList -join ' ')"
-    Start-Process powershell.exe -ArgumentList $ArgumentList
+    powershell.exe -version 2.0 -executionpolicy bypass -noprofile -file .\test.ps1
 }
 <#
 Task Test -Depends Init  {
